@@ -3,7 +3,7 @@ import cv2
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-
+import gc
 
 
 # Helper function that gets all video pathes and labels, default path is to the Real Life Trial Cases Dataset.
@@ -29,7 +29,7 @@ def get_videos_paths(dataset = "court_trial"):
 ##2 Sample video into same number of frames
 ##3 Resize all frames to a similar size
 ##4 Apply Eulerian magnification algorithm on the frames
-def preprocess_video(video_path, eulerian_magnify, num_sampled_frames, frame_size, return_gray, verify_faces):
+def preprocess_video(video_path, eulerian_magnify = False, num_sampled_frames = 100, frame_size = [64,64], return_gray= True, verify_faces = True):
     # Open the video file
     cap = cv2.VideoCapture(video_path)
 
@@ -135,8 +135,9 @@ def get_last_two_folders_concatenated(path):
     # Concatenate the last two components with a '/'
     return '/'.join(last_two)
 
-# Main function to prepare the dataset, it preprocesses every video in the dataset and saves train, eval and test sets as .npy files as well as images for visualization
-def prepare_dataset(output_folder, dataset="court_trial", eulerian_magnify=False, num_sampled_frames=100, frame_size=[64, 64], return_gray=True, verify_faces=True, test_size=0.2):
+# Main function to prepare the dataset, it preprocesses every video in the dataset and saves train and test sets as .npy files as well as images for visualization
+def prepare_dataset(output_folder, dataset="court_trial", eulerian_magnify=False, num_sampled_frames=100, frame_size=[64, 64], return_gray=True, verify_faces=True, test_size=0.2, batch_size=32):
+    
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -145,26 +146,60 @@ def prepare_dataset(output_folder, dataset="court_trial", eulerian_magnify=False
     video_paths, labels = zip(*videos)
 
     # Split data into train, test, eval
-    train_paths, test_paths, train_labels, test_labels = train_test_split(video_paths, labels, test_size=test_size)
+    train_paths, test_paths, train_labels, test_labels = train_test_split(video_paths, labels, test_size=test_size, random_state=42, stratify=labels)
 
     datasets = {
         "train": (train_paths, train_labels),
         "test": (test_paths, test_labels),
     }
 
-    # Process and save each dataset
+    # Loop over all data and preprocess it in batches
     for name, (paths, labels) in datasets.items():
-        data = []
-        for video_path, label in zip(paths, labels):
-            processed_frames = preprocess_video(video_path, eulerian_magnify, num_sampled_frames, frame_size, return_gray, verify_faces)
-            print(video_path, "\n")
-            save_frames_as_images(processed_frames, os.path.join(output_folder, name, get_last_two_folders_concatenated(video_path))) # Ex: OutputFolder/Train/Deceptive/trial_lie_0021
-            data.append((processed_frames, label))
-        
-        X, y = zip(*data)
-        X = np.array(X)
-        y = np.array(y)
+        total_batches = len(paths) // batch_size + (1 if len(paths) % batch_size != 0 else 0)
+        batch_file_paths = []
 
-        # Save preprocessed data
+        # Loop over all batches
+        for batch_index in range(total_batches):
+            print(f"Preprocessing batch {batch_index}")
+            batch_start = batch_index * batch_size
+            batch_end = min((batch_index + 1) * batch_size, len(paths))
+            batch_paths = paths[batch_start:batch_end]
+            batch_labels = labels[batch_start:batch_end]
+                        
+            data = []
+            # Loop over videos in one patch
+            for video_path, label in zip(batch_paths, batch_labels):
+                processed_frames = preprocess_video(video_path, eulerian_magnify, num_sampled_frames, frame_size, return_gray, verify_faces)
+                print(video_path, "\n")
+                save_frames_as_images(processed_frames, os.path.join(output_folder, name, get_last_two_folders_concatenated(video_path))) 
+                data.append((processed_frames, label))
+
+            X_batch, y_batch = zip(*data)
+            X_batch = np.array(X_batch)
+            y_batch = np.array(y_batch)
+
+            # Save batch data
+            batch_X_path = os.path.join(output_folder, f'X_{name}_batch_{batch_index}.npy')
+            batch_Y_path = os.path.join(output_folder, f'Y_{name}_batch_{batch_index}.npy')
+            np.save(batch_X_path, X_batch)
+            np.save(batch_Y_path, y_batch)
+            batch_file_paths.append((batch_X_path, batch_Y_path)) # For concatenation later
+            
+            # To avoid memory leaks, deleted preprocessed patches after they're save to disk.
+            del X_batch, y_batch, data
+            gc.collect()
+
+
+
+        # Load and concatenate batch data
+        X, y = [], []
+        for X_path, Y_path in batch_file_paths:
+            X.append(np.load(X_path))
+            y.append(np.load(Y_path))
+
+        X = np.concatenate(X, axis=0)
+        y = np.concatenate(y, axis=0)
+
+        # Save combined data
         np.save(os.path.join(output_folder, f'X_{name}.npy'), X)
         np.save(os.path.join(output_folder, f'Y_{name}.npy'), y)

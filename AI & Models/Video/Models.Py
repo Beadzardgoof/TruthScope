@@ -34,8 +34,9 @@ def build_CNN_LSTM(input_shape):
 
     return model
 
+
 # Trains the model on the processed data
-def train_model(model, data_path="Saved Processed Data and Models/[Preprocessed Data]", batch_size = 8, epochs = 30):
+def train_model(model, name = "CNN_LSTM" , data_path="Saved Processed Data and Models/[Preprocessed Data]", batch_size = 8, epochs = 30):
     # Load saved preprocessed arrays for train, test, and eval datasets
     X_train = np.load(os.path.join(data_path, 'X_train.npy'))
     y_train = np.load(os.path.join(data_path, 'Y_train.npy'))
@@ -44,7 +45,7 @@ def train_model(model, data_path="Saved Processed Data and Models/[Preprocessed 
 
     # Define checkpoint
     checkpoint = ModelCheckpoint(
-        os.path.join(data_path, 'Checkpoint') , save_weights_only=True, save_best_only=True, verbose=1
+        os.path.join(data_path, 'Checkpoint.h5') , save_weights_only=False, save_best_only=True, verbose=1
     )
     
     # Define early stopping
@@ -59,7 +60,7 @@ def train_model(model, data_path="Saved Processed Data and Models/[Preprocessed 
     print(f'Test Loss: {evaluation[0]}, Test Accuracy: {evaluation[1]}')
 
     # Save trained model with accuracy up to two decimal places
-    model.save(os.path.join(data_path, 'CNN_LSTM {:.2f} Acc.h5'.format(evaluation[1] * 100)))
+    model.save(os.path.join(data_path, name + ' {:.2f} Acc.h5'.format(evaluation[1] * 100)))
 
     return history, evaluation
 
