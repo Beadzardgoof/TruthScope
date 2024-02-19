@@ -1,3 +1,6 @@
 # Dataset ignored because its too large to push and can't publicly be available without the original authers' consent.
 AI & Models/Datasets/
-AI & Models/Video/Saved Processed Data and Models/
+AI & Models/Video (Traditional Approach)/Saved Processed Data and Models/
+AI & Models/Video (Using Facial Landmarks)/Saved Processed Data and Models/
+AI & Models/Video (Using Facial Landmarks)/shape_predictor_68_face_landmarks.dat
+AI & Models/Video (Traditional Approach)/Temp.py

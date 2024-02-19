@@ -7,10 +7,8 @@ import gc
 
 
 # Helper function that gets all video pathes and labels, default path is to the Real Life Trial Cases Dataset.
-def get_videos_paths(dataset = "court_trial"):
-    if dataset == 'court_trial':
-        base_path = "../Datasets/Real Life Trial Cases Data/Clips"
-    else: base_path = "../Datasets/MU3D-Package/Videos"
+def get_videos_paths_court_trial():
+    base_path = "../Datasets/Real Life Trial Cases Data/Clips"
     
     categories = ["Deceptive", "Truthful"]
     videos = []
@@ -23,13 +21,38 @@ def get_videos_paths(dataset = "court_trial"):
             videos.append((video_path, label))
     return videos
     
+    
+def get_videos_paths_mu3d(use_truthprop = False, truthprop_threshold = 0.5):
+    base_path = "../Datasets/MU3D-Package/Videos"
+    
+    videos = []
+    
+    # Load the cookbook
+    cookbook_path = "../Datasets/MU3D-Package/MU3D Codebook.xlsx"
+    df = pd.read_excel(cookbook_path, sheet_name='Video-Level Data')
 
+    for video_file in os.listdir(base_path):
+            video_path = os.path.join(base_path, video_file)
+            # Split the base name and extension (e.g., ('WM027_4PL', '.wmv'))
+            name, _ = os.path.splitext(video_file)
+            
+            # Use thresholded truth prop as label or just use provided labels in Veracity column
+            if(use_truthprop):
+                truth_prop = df.loc[df['VideoID'] == name, 'TruthProp'].values[0]
+                label = 0 if truth_prop >= truthprop_threshold else 1
+            else:
+                label = df.loc[df['VideoID'] == name, 'Veracity'].values[0]
+                
+            videos.append((video_path, label))
+    return videos
+    
+    
 # Preprocesses a single video
 ##1 Crop the face from each frame video
 ##2 Sample video into same number of frames
 ##3 Resize all frames to a similar size
 ##4 Apply Eulerian magnification algorithm on the frames
-def preprocess_video(video_path, eulerian_magnify = False, num_sampled_frames = 100, frame_size = [64,64], return_gray= True, verify_faces = True):
+def preprocess_video(video_path, num_sampled_frames = 100, frame_size = [64,64], return_gray= True, verify_faces = True):
     # Open the video file
     cap = cv2.VideoCapture(video_path)
 
@@ -87,10 +110,6 @@ def preprocess_video(video_path, eulerian_magnify = False, num_sampled_frames = 
         if return_gray:
             face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
-        # Apply Eulerian magnification if necessary
-        if eulerian_magnify:
-            face = apply_eulerian_magnification(face)
-
         processed_frames[i] = face
 
     # Normalize the frames
@@ -98,13 +117,8 @@ def preprocess_video(video_path, eulerian_magnify = False, num_sampled_frames = 
     channels = 1 if return_gray else 3
     processed_frames = processed_frames.reshape((num_sampled_frames, frame_size[0], frame_size[1], channels))
 
-    return processed_frames
 
-# Eulerian mangification algorithm by MIT, it magnifies colors of videos to reveal tiny changes that may hold valuable information.
-def apply_eulerian_magnification(frame):
-    # Implement the Eulerian magnification algorithm here
-    # This part is left as a placeholder for the actual implementation
-    pass
+    return processed_frames
 
 # Helper function that Takes processed frames and saves them as images in output path (for visualization)
 def save_frames_as_images(processed_frames, output_folder):
@@ -136,16 +150,21 @@ def get_last_two_folders_concatenated(path):
     return '/'.join(last_two)
 
 # Main function to prepare the dataset, it preprocesses every video in the dataset and saves train and test sets as .npy files as well as images for visualization
-def prepare_dataset(output_folder, dataset="court_trial", eulerian_magnify=False, num_sampled_frames=100, frame_size=[64, 64], return_gray=True, verify_faces=True, test_size=0.2, batch_size=32):
+def prepare_dataset(output_folder, dataset="court_trial", num_sampled_frames=100, frame_size=[64, 64], return_gray=True, verify_faces=True, test_size=0.2):
     
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
     # Get all video paths and corresponding labels
-    videos = get_videos_paths(dataset)
+    if dataset == "court_trial":
+        videos = get_videos_paths_court_trial()
+    else:
+        videos = get_videos_paths_mu3d()
+
+        
     video_paths, labels = zip(*videos)
 
-    # Split data into train, test, eval
+    # Split data into train and test sets
     train_paths, test_paths, train_labels, test_labels = train_test_split(video_paths, labels, test_size=test_size, random_state=42, stratify=labels)
 
     datasets = {
@@ -153,53 +172,29 @@ def prepare_dataset(output_folder, dataset="court_trial", eulerian_magnify=False
         "test": (test_paths, test_labels),
     }
 
-    # Loop over all data and preprocess it in batches
+    # Loop over train and test sets
     for name, (paths, labels) in datasets.items():
-        total_batches = len(paths) // batch_size + (1 if len(paths) % batch_size != 0 else 0)
-        batch_file_paths = []
+        print(f"Preprocessing {name} data")
 
-        # Loop over all batches
-        for batch_index in range(total_batches):
-            print(f"Preprocessing batch {batch_index}")
-            batch_start = batch_index * batch_size
-            batch_end = min((batch_index + 1) * batch_size, len(paths))
-            batch_paths = paths[batch_start:batch_end]
-            batch_labels = labels[batch_start:batch_end]
-                        
-            data = []
-            # Loop over videos in one patch
-            for video_path, label in zip(batch_paths, batch_labels):
-                processed_frames = preprocess_video(video_path, eulerian_magnify, num_sampled_frames, frame_size, return_gray, verify_faces)
-                print(video_path, "\n")
-                save_frames_as_images(processed_frames, os.path.join(output_folder, name, get_last_two_folders_concatenated(video_path))) 
-                data.append((processed_frames, label))
+        data = []
+        # Loop over videos
+        for video_path, label in zip(paths, labels):
+            print(video_path, "\n")
+            processed_frames = preprocess_video(video_path, num_sampled_frames, frame_size, return_gray, verify_faces)
+            save_frames_as_images(processed_frames, os.path.join(output_folder, name, get_last_two_folders_concatenated(video_path))) 
+            data.append((processed_frames, label))
 
-            X_batch, y_batch = zip(*data)
-            X_batch = np.array(X_batch)
-            y_batch = np.array(y_batch)
-
-            # Save batch data
-            batch_X_path = os.path.join(output_folder, f'X_{name}_batch_{batch_index}.npy')
-            batch_Y_path = os.path.join(output_folder, f'Y_{name}_batch_{batch_index}.npy')
-            np.save(batch_X_path, X_batch)
-            np.save(batch_Y_path, y_batch)
-            batch_file_paths.append((batch_X_path, batch_Y_path)) # For concatenation later
-            
-            # To avoid memory leaks, deleted preprocessed patches after they're save to disk.
-            del X_batch, y_batch, data
-            gc.collect()
-
-
-
-        # Load and concatenate batch data
-        X, y = [], []
-        for X_path, Y_path in batch_file_paths:
-            X.append(np.load(X_path))
-            y.append(np.load(Y_path))
-
-        X = np.concatenate(X, axis=0)
-        y = np.concatenate(y, axis=0)
+        X, y = zip(*data)
+        X = np.array(X)
+        y = np.array(y)
 
         # Save combined data
         np.save(os.path.join(output_folder, f'X_{name}.npy'), X)
         np.save(os.path.join(output_folder, f'Y_{name}.npy'), y)
+
+        # Free up memory
+        del X, y, data
+        gc.collect()
+        
+  
+  

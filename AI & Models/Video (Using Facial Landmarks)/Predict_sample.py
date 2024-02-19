@@ -4,10 +4,10 @@ import numpy as np
 
 # Path to the saved model
 base_path = 'Saved Processed Data and Models/court_trial 100x64x64x1'
-checkpoint_path = base_path + '/checkpoint.h5'
+model_path = base_path + '/CNN_LSTM 85.71 Acc [BEST].h5' # best generalization
 
 # Load the saved model
-model = load_model(checkpoint_path)
+model = load_model(model_path)
 
 while True:
     print("Enter sample path (or type 'exit' to quit):")
