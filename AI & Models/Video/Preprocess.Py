@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 import gc
-
+import imageio
 
 # Helper function that gets all video pathes and labels, default path is to the Real Life Trial Cases Dataset.
 def get_videos_paths_court_trial():
@@ -22,7 +22,7 @@ def get_videos_paths_court_trial():
     return videos
     
     
-def get_videos_paths_mu3d(use_truthprop = False, truthprop_threshold = 0.5):
+def get_videos_paths_mu3d():
     base_path = "../Datasets/MU3D-Package/Videos"
     
     videos = []
@@ -35,14 +35,8 @@ def get_videos_paths_mu3d(use_truthprop = False, truthprop_threshold = 0.5):
             video_path = os.path.join(base_path, video_file)
             # Split the base name and extension (e.g., ('WM027_4PL', '.wmv'))
             name, _ = os.path.splitext(video_file)
-            
-            # Use thresholded truth prop as label or just use provided labels in Veracity column
-            if(use_truthprop):
-                truth_prop = df.loc[df['VideoID'] == name, 'TruthProp'].values[0]
-                label = 0 if truth_prop >= truthprop_threshold else 1
-            else:
-                label = df.loc[df['VideoID'] == name, 'Veracity'].values[0]
-                
+            # Get label
+            label = df.loc[df['VideoID'] == name, 'Veracity'].values[0]
             videos.append((video_path, label))
     return videos
     
@@ -51,7 +45,6 @@ def get_videos_paths_mu3d(use_truthprop = False, truthprop_threshold = 0.5):
 ##1 Crop the face from each frame video
 ##2 Sample video into same number of frames
 ##3 Resize all frames to a similar size
-##4 Apply Eulerian magnification algorithm on the frames
 def preprocess_video(video_path, num_sampled_frames = 100, frame_size = [64,64], return_gray= True, verify_faces = True):
     # Open the video file
     cap = cv2.VideoCapture(video_path)
@@ -120,21 +113,33 @@ def preprocess_video(video_path, num_sampled_frames = 100, frame_size = [64,64],
 
     return processed_frames
 
-# Helper function that Takes processed frames and saves them as images in output path (for visualization)
-def save_frames_as_images(processed_frames, output_folder):
+# Helper function that Takes processed frames and saves them as gifs in output path (for visualization)
+def save_frames_as_gif(processed_frames, output_folder, filename='video.gif', fps=10):
     # Ensure the output directory exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # Save each frame as an image
-    for i, frame in enumerate(processed_frames):
-        # Denormalize to show real color
-        frame = frame * 255.0
-        # Define the filename for each image
-        filename = os.path.join(output_folder, f'frame_{i:04d}.png')  # Saves as frame_0001.png, frame_0002.png, etc.
-        # Write the image
-        cv2.imwrite(filename, frame)
+    # Define the full path for the gif file
+    gif_path = os.path.join(output_folder, filename)
 
+    # Initialize list to hold processed frames for GIF
+    gif_frames = []
+
+    # Iterate over the frames and convert each to uint8
+    for i in range(processed_frames.shape[0]):
+        # Assuming processed_frames is 4D (num_frames, height, width, channels)
+        frame = processed_frames[i]
+        if frame.ndim == 3 and frame.shape[2] == 1:
+            # If frames have a channel dimension, remove it for grayscale
+            frame = frame.reshape((frame.shape[0], frame.shape[1]))
+        # Normalize to 0-255 and convert to uint8
+        frame = (frame * 255).astype(np.uint8)
+        gif_frames.append(frame)
+
+    # Save the frames as a gif
+    imageio.mimsave(gif_path, gif_frames, fps=fps)
+    
+    
 # Helper function to get last two folders in a path string (to)
 def get_last_two_folders_concatenated(path):
     # Split the path into components
@@ -148,6 +153,20 @@ def get_last_two_folders_concatenated(path):
 
     # Concatenate the last two components with a '/'
     return '/'.join(last_two)
+
+# Helper function to get last folder in a path string
+def get_video_name_from_path(path):
+    # Split the path into components
+    parts = path.split(os.sep)
+    
+    # Extract the last component
+    last = parts[-1] if len(parts) >= 1 else parts
+
+    # Remove the file extension from the last component if it's a file
+    last = os.path.splitext(last)[0]
+
+    # Concatenate the last two components with a '/'
+    return last
 
 # Main function to prepare the dataset, it preprocesses every video in the dataset and saves train and test sets as .npy files as well as images for visualization
 def prepare_dataset(output_folder, dataset="court_trial", num_sampled_frames=100, frame_size=[64, 64], return_gray=True, verify_faces=True, test_size=0.2):
@@ -181,7 +200,13 @@ def prepare_dataset(output_folder, dataset="court_trial", num_sampled_frames=100
         for video_path, label in zip(paths, labels):
             print(video_path, "\n")
             processed_frames = preprocess_video(video_path, num_sampled_frames, frame_size, return_gray, verify_faces)
-            save_frames_as_images(processed_frames, os.path.join(output_folder, name, get_last_two_folders_concatenated(video_path))) 
+            if dataset == 'court_trial':
+                save_frames_as_gif(processed_frames, os.path.join(output_folder, name, get_last_two_folders_concatenated(video_path)))
+            else:
+                label_text = "Deceptive" if label == 1 else "Truthful"
+                save_frames_as_gif(processed_frames, os.path.join(output_folder, name, label_text , get_video_name_from_path(video_path)))
+                
+                
             data.append((processed_frames, label))
 
         X, y = zip(*data)

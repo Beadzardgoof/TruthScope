@@ -5,13 +5,20 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Conv3D, MaxPooling3D, Flatten, Dense, Dropout, LSTM, BatchNormalization, TimeDistributed, Conv2D, MaxPooling2D, Bidirectional
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD, Adamax, Adadelta, Ftrl, Nadam, RMSprop
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.models import load_model
 from keras.applications import ResNet50
 from keras.optimizers import RMSprop
 from keras.metrics import Precision, Recall, AUC
+import tensorflow_addons as tfa
 
+
+# Expiremental learning rate scheduler using cosine decay
+lr_schedule = tf.keras.experimental.CosineDecayRestarts(
+    initial_learning_rate= 0.001,
+    first_decay_steps= 1000
+)
 
 # Defines the architecture for a CNN-LSTM model
 def build_CNN_LSTM(input_shape):
@@ -33,82 +40,36 @@ def build_CNN_LSTM(input_shape):
     model.add(Dropout(0.3))
     model.add(Dense(1, activation='sigmoid'))
     
-    # Compile the model
+    #Compile the model
     model.compile(optimizer=Adam(), 
               loss='binary_crossentropy', 
               metrics=['accuracy', Precision(), Recall(), AUC()])
-
-    return model
-
-
-# Defines an alternative architecture for a CNN-LSTM model
-def build_CNN_LSTM_ALT(input_shape):
-    model = Sequential()
-
-    # TimeDistributed wrapper to apply CNN across time dimension
-    model.add(TimeDistributed(Conv2D(16, (3, 3), activation='relu'), input_shape=input_shape))
-    model.add(TimeDistributed(MaxPooling2D((2, 2))))
-    model.add(TimeDistributed(Conv2D(8, (3, 3), activation='relu')))
-    model.add(TimeDistributed(MaxPooling2D((2, 2))))
-    model.add(TimeDistributed(Flatten()))
-
-    # LSTM layer for temporal processing
-    model.add(LSTM(50, return_sequences=False))
-    model.add(Dropout(0.2))
-
-    # Fully connected layers
-    model.add(Dense(1, activation='sigmoid'))
     
-    # Compile the model
-    model.compile(optimizer=Adam(), 
-              loss='binary_crossentropy', 
-              metrics=['accuracy', Precision(), Recall(), AUC()])
-
-    return model
-
-
-# Defines the architecture for a 2D CNN
-def build_CNN(input_shape):
-    model = Sequential()
-
-    # TimeDistributed wrapper to apply CNN across time dimension
-    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Flatten())
-
-    # Fully connected layers
-    model.add(Dense(500, activation='relu'))
-    model.add(Dropout(0.3))
-    model.add(Dense(100, activation='relu'))
-    model.add(Dropout(0.3))
-    model.add(Dense(1, activation='sigmoid'))
-    
-    # Compile the model
-    model.compile(optimizer=Adam(), 
-              loss='binary_crossentropy', 
-              metrics=['accuracy', Precision(), Recall(), AUC()])
+    # model.compile(optimizer=SGD(learning_rate=lr_schedule),
+    #            loss='binary_crossentropy', 
+    #            metrics=['accuracy', Precision(), Recall(), AUC()])
 
     return model
 
 
 
 # 3D CNN based architecture
-def build_3D_CNN(input_shape):
+def build_3D_CNN():
     model = Sequential()
     
     # Convolutional layers
-    model.add(Conv3D(32, kernel_size=(3, 3, 3), activation='relu'))
+    model.add(Conv3D(32, kernel_size=(3, 3, 1), activation='relu'))
     model.add(MaxPooling3D(pool_size=(2, 2, 2)))
     
-    model.add(Conv3D(16, kernel_size=(3, 3, 3), activation='relu'))
+    model.add(Conv3D(16, kernel_size=(1, 1, 3), activation='relu'))
     model.add(MaxPooling3D(pool_size=(2, 2, 2)))
 
     
     model.add(Flatten())
     
     # Fully connected layers
+    model.add(Dense(500, activation='relu'))
+    model.add(Dropout(0.3))
     model.add(Dense(100, activation='relu'))
     model.add(Dropout(0.3))
     
