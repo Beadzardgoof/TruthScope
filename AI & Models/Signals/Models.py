@@ -74,8 +74,8 @@ def build_gru(input_shape, output_units=2, learning_rate=0.0001):
 
 def build_ann(output_units=1, learning_rate=0.01):
     model = Sequential()
-    model.add(Dense(units=16, activation='relu'))
     model.add(Dense(units=8, activation='relu'))
+    model.add(Dense(units=4, activation='relu'))
     model.add(Dense(units=output_units, activation='sigmoid'))
     
     adam_optimizer = Adam(learning_rate=learning_rate)

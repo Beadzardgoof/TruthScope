@@ -22,10 +22,7 @@ import seaborn as sns
 def build_lstm(input_shape, output_units=2, learning_rate=0.0001):
     # Model architecture
     model = Sequential()
-    model.add(LSTM(units=32, return_sequences=True, input_shape=input_shape, activation='tanh'))
-    model.add(Dropout(0.5))
-    model.add(LSTM(units=32,  return_sequences=False, activation='tanh'))
-    model.add(Dropout(0.5))
+    model.add(LSTM(units=32, return_sequences=False, input_shape=input_shape, activation='tanh'))
     model.add(Dense(units=output_units, activation='softmax'))
     
     # Compile the model with a specified learning rate
@@ -72,15 +69,15 @@ def build_gru(input_shape, output_units=2, learning_rate=0.0001):
     
     return model
 
-def build_ann(output_units=1, learning_rate=0.01):
+def build_ann(output_units=2, learning_rate=0.01):
     model = Sequential()
     model.add(Dense(units=16, activation='relu'))
-    model.add(Dense(units=8, activation='relu'))
-    model.add(Dense(units=output_units, activation='sigmoid'))
+    model.add(Dense(units=8, activation='sigmoid'))
+    model.add(Dense(units=output_units, activation='softmax'))
     
     adam_optimizer = Adam(learning_rate=learning_rate)
     model.compile(optimizer=adam_optimizer,
-                  loss='binary_crossentropy', 
+                  loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
     
     return model
@@ -94,7 +91,7 @@ def train_model_dl(model, output_path, X_train, y_train, X_test, y_test, name = 
     
     # Define checkpoint
     checkpoint = ModelCheckpoint(
-        os.path.join(output_path, 'Checkpoint.h5') , save_weights_only=False, save_best_only=True, verbose=1
+        os.path.join(output_path, 'Checkpoint.h5') , save_weights_only=False, save_best_only=True, verbose=1,  monitor='val_accuracy',  mode='max'
     )
     
     # Define early stopping
@@ -106,7 +103,6 @@ def train_model_dl(model, output_path, X_train, y_train, X_test, y_test, name = 
     
     # Evaluate the checkpoint best model  on test set
     model_checkpoint = load_model(os.path.join(output_path, 'Checkpoint.h5'))
-    #model_checkpoint = model
     evaluation = model_checkpoint.evaluate(X_test, y_test)
     print(evaluation)
     print(f'Checkpoint best model: Test Loss: {evaluation[0]}, Test Accuracy: {evaluation[1]}')

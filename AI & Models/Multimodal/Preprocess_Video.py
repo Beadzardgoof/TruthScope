@@ -206,9 +206,8 @@ def get_manual_split_data(data_path, test_set_videos_names_path):
     # Loop over the folders in the data path
     for folder_name in ['truthful', 'deceptive']:
         folder_path = os.path.join(data_path, folder_name)
-
         # Loop over the files in the folder
-        for file_name in os.listdir(folder_path):       
+        for file_name in os.listdir(folder_path):   
             video_name = file_name.rsplit('.', 1)[0]  # Remove the .npy extension
             video_path = os.path.join(folder_path, file_name)
             video_data = np.load(video_path)
@@ -226,13 +225,13 @@ def get_manual_split_data(data_path, test_set_videos_names_path):
     X_test, y_test = np.array(X_test), np.array(y_test)
 
     # Shuffle the training and testing data separately
-    X_train, y_train = shuffle(X_train, y_train, random_state=42)
-    X_test, y_test = shuffle(X_test, y_test, random_state=42)
+    #X_train, y_train = shuffle(X_train, y_train, random_state=42)
+    #X_test, y_test = shuffle(X_test, y_test, random_state=42)
     
     return X_train, X_test, y_train, y_test
     
 # Function that reads saved numpy arrays from a path without a split (to do auto train-test split after with MU3D)
-def get_data_from_saved_numpy_arrays(data_path):
+def get_data_from_saved_numpy_arrays(data_path, test_set_videos_names_path):
     # Initialize lists to hold the data and labels
     X, y = [], []
     

@@ -19,7 +19,7 @@ import os
 def get_df_court_trial():
     base_path = "../Datasets/Real Life Trial Cases Data/Transcription"
     
-    categories = ["Deceptive", "Truthful"]
+    categories = ['truthful', 'deceptive']
     df_content = []  # List to store text content and labels and video names
 
     for category in categories:
@@ -118,7 +118,7 @@ def preprocess_df(df, out_name, isPredict = False, num_grams = 1):
     df.loc[:, 'text'] = processed_texts    
 
     # Save to Excel for visualization
-    df.to_excel(f'preprocessed_{out_name}.xlsx', index=False)
+    #df.to_excel(f'preprocessed_{out_name}.xlsx', index=False)
     
     return df
 
