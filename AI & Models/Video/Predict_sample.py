@@ -25,7 +25,7 @@ while True:
         break
 
     # Preprocess the input video
-    processed_frames = pp.preprocess_video(sample_path)
+    processed_frames = pp.preprocess_video(sample_path, verify_faces= False)
     pp.save_frames_as_gif(processed_frames, 'visualize')
     processed_frames = np.expand_dims(processed_frames, axis=0)
     print(processed_frames.shape) 
