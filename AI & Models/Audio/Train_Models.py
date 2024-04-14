@@ -100,7 +100,7 @@ md.train_model_dl(bidirectional_lstm_model, output_path, X_train, y_train, X_tes
 
 
 # #1 SVM
-# svm_classifier = SVC(kernel='rbf', C = 10, degree = 2)
+# svm_classifier = SVC(kernel='rbf', C = 10)
 # md.train_model_ml(svm_classifier, output_path ,X_train, y_train, X_test, y_test, name = f"SVM")
 
 # #2 Random Forest

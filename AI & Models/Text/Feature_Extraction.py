@@ -34,7 +34,7 @@ def count_vectorize(x, is_test=False):
 # Converts text documents into mean GloVe embeddings
 def glove_vectorize(x):
     
-    model = KeyedVectors.load_word2vec_format('Glove/glove.6B.50d.txt.word2vec', binary=False)
+    model = KeyedVectors.load_word2vec_format('Glove/glove.6B.100d.txt.word2vec', binary=False)
     vectors = []
     for doc in x:
         words = doc.split()

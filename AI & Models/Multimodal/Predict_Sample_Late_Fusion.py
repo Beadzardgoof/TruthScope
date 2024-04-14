@@ -13,9 +13,11 @@ import statistics
 # Set the environment variable for reproducability
 os.environ['TF_DETERMINISTIC_OPS'] = '1'
 
+
+
 ## load the models
 
-video_model = load_model('Pretrained Models/Video CNN_3D 0.46 Lss 83.33 Acc.h5')
+video_model = load_model('Pretrained Models/Video CNN_3D 0.61 Lss 87.50 Acc.h5')
 audio_model = load_model('Pretrained Models/Audio Bidirectional LSTM 0.62 Lss 79.17 Acc.h5')
 text_model = load_model('Pretrained Models/Text ANN tf-idf 0.50 Lss 79.17 Acc.h5')
 
@@ -42,8 +44,12 @@ while True:
     ### Video ###
     
     # Preprocess the input video
-    processed_frames = ppv.preprocess_video(sample_path, verify_faces= False)
-    ppv.save_frames_as_gif(processed_frames, 'visualize')
+    npy_file = ppv.get_video_name_from_path(sample_path) + ".npy"
+    if npy_file in os.listdir("AH Trial"):
+        processed_frames = np.load("AH Trial/" + npy_file)
+    else:
+        processed_frames = ppv.preprocess_video_mtcnn(sample_path)
+        ppv.save_frames_as_gif(processed_frames, 'visualize frames')
     processed_frames = np.expand_dims(processed_frames, axis=0)
     
     # Predict
@@ -142,11 +148,11 @@ while True:
         
         ## Weighted average
         
-        weights = [0.33, 0.33, 0.33]
+        weights = [0.4, 0.3, 0.3]
         weighted_average = weights[0] * percentage_video + weights[1] * percentage_audio + weights[2] * percentage_text
         
     else:
-        weights = [0.7, 0.3]  # Weights for video, audio
+        weights = [0.5, 0.5]  # Weights for video, audio
         
         # Get weighted vote and threshold it
         weighted_average = weights[0] * percentage_video + weights[1] * percentage_audio

@@ -1,20 +1,14 @@
 import Preprocess as pp
-from keras.models import load_model
 import numpy as np
 import os
-import tensorflow as tf
-import moviepy.editor as mp
-import speech_recognition as sr
+from joblib import load
 
 # Path to the saved model
-base_path = 'Saved Models/Court_trial'
-model_path = os.path.join(base_path, 'ANN tf-idf 0.50 Lss 79.17 Acc.h5') # best generalization
+base_path = 'Saved Models\Court Trial'
+model_path = os.path.join(base_path, 'XGB 75.00 Acc.joblib') # best generalization
 
 # Load the saved model
-model = load_model(model_path)
-
-# Initialize preprocessor class
-en_pre = pp.EnglishPreprocessor()
+model = load(model_path)
 
 
 print("For best results, your sample should be 20-30 seconds long.")
@@ -30,47 +24,15 @@ while True:
     if sample_path.lower() == 'exit':
         break
 
-    # Load the video 
-    video = mp.VideoFileClip(sample_path) 
+    output_path = pp.get_video_name_from_path(sample_path) + "_features.csv"
+    fex = pp.extract_facial_features(sample_path, output_path)
+    feature_vector = pp.prepare_feature_vector(output_path)
+    feature_vector = np.expand_dims(feature_vector, axis=0)
     
-    # Extract the audio from the video 
-    audio_file = video.audio 
-    audio_file_path = f"{sample_path[:-4]}.wav"
-    audio_file.write_audiofile(audio_file_path) 
-    
-    # Initialize recognizer 
-    recognizer = sr.Recognizer() 
-    
-    # Load the audio file 
-    with sr.AudioFile(audio_file_path) as source: 
-        audio_data = recognizer.record(source) 
-    
-    # Convert audio to text
-    try:
-        text = recognizer.recognize_google(audio_data)
-        print("Text extracted from video:", text)
-    except sr.UnknownValueError:
-        print("Google Speech Recognition could not understand audio")
-        
-        continue
-    except sr.RequestError as e:
-        print(f"Could not request results from Google Speech Recognition service; {e}")
-        continue
-    finally:
-        # Remove the temp file 
-        os.remove(audio_file_path)
-
-    # Print the text 
-    print("\nThe resulting text from video is: \n") 
-    print(text) 
-    
-    # Preprocess the text and extract features
-    text = en_pre.preprocess(text)
-    text = text.toarray()
-    
+    print(feature_vector.shape)
     
     # Predict
-    predictions = model.predict(text)
+    predictions = model.predict_proba(feature_vector)
     
     # Convert the probability to percentage
     percentage = predictions[0][0] * 100  # Adjust indexing based on model's output shape

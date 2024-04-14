@@ -12,7 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 # Load the pretrained models on different modalities and print architectures
 
 ## Visual (Image/Video based) model
-video_model = load_model('Pretrained Models/Video CNN_3D 0.46 Lss 83.33 Acc.h5')
+video_model = load_model('Pretrained Models\Video CNN_3D 0.61 Lss 87.50 Acc.h5')
 video_model.summary()
 
 
@@ -32,7 +32,7 @@ text_model.summary()
 ## Video
 
 # Get data (Manually split)
-data_path = "../video/Saved Processed Data and Models/court_trial 100x64x64x1/Numpy Arrays"
+data_path = "../video/Saved Processed Data and Models/court_trial 100x64x64x1 MTCNN/Numpy Arrays"
 manual_split_video_names_path = '../Datasets/Real Life Trial Cases Data/Manual Split Test Videos.txt'
 
 X_train_video, X_test_video, y_train_video, y_test_video = ppv.get_manual_split_data(data_path, manual_split_video_names_path)
@@ -127,7 +127,8 @@ majority_vote_test = mode(np.c_[predictions_test_video_thresholded, predictions_
 ### 2- Weighted voting ###
 
 # Define weights for each modality based on validation performance
-weights = [0.33, 0.33, 0.33]  # Weights for video, audio, text
+#weights = [0.15, 0.5, 0.35]  # Weights for video, audio, text (best weights so far)
+weights = [0.4, 0.3, 0.3] 
 
 # Weighted voting on train data
 weighted_vote_train = np.average(np.c_[predictions_train_video, predictions_train_audio, predictions_train_text], axis=1, weights=weights)

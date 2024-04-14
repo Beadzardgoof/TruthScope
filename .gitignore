@@ -3,19 +3,28 @@ AI & Models/Datasets/
 
 # Ignoring models and processed data because they have large file sizes.
 
+# Video
 AI & Models/Video/Saved Processed Data and Models/
-AI & Models/Video/Failed Attempts
+AI & Models/Video/Failed Attempts/
 
+# Text
 AI & Models/Text/Saved Models/
-AI & Models/Text/Glove
+AI & Models/Text/Glove/
 
+# Audio
 AI & Models/Audio/Saved Processed Data and Models/
 
+# Signals
 AI & Models/Signals/Saved Models/
 AI & Models/Signals/Facial Features Court Trial/
 AI & Models/Signals/Feature Vectors Court Trial/
+AI & Models/Signals/Failed Attempts/
 
+# Multimodal
 AI & Models/Multimodal/Pretrained Models/
 AI & Models/Multimodal/AH Trial/
 AI & Models/Multimodal/Court Trial Test Set/
 
+# Web app
+Web App/Backend/TruthFinder/api/Pretrained Models/
+Web App/Backend/TruthFinder/uploaded videos/

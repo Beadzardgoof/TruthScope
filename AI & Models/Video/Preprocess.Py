@@ -7,6 +7,11 @@ import gc
 import imageio
 from sklearn.utils import shuffle
 import random
+import dlib
+from mtcnn import MTCNN
+import sys
+import mediapipe as mp
+
 
 # Helper function that gets all video pathes and labels
 def get_videos_paths_court_trial():
@@ -46,6 +51,9 @@ def get_videos_paths_mu3d():
 ##1 Crop the face from each frame in the video
 ##2 Sample video into a given number of frames
 ##3 Resize all frames to a given size
+# (Note MTCNN is accurate and more computationly expensive, so with that specific approach step 1 and 2 or interchanged in order, so sampling is done before cropping the face)
+
+# Uses haar cascades to extract faces, achievies different results for same input (but our best model is trained on it so far unfortunately)
 def preprocess_video(video_path, num_frames_to_sample = 100, frame_size = [64,64], return_gray= True, verify_faces = True):
     # Open the video file
     cap = cv2.VideoCapture(video_path)
@@ -114,6 +122,76 @@ def preprocess_video(video_path, num_frames_to_sample = 100, frame_size = [64,64
 
     return processed_frames
 
+# Uses MTCNNs for face extraction (best quality so far)
+def preprocess_video_mtcnn(video_path, num_frames_to_sample=100, frame_size=[64, 64], return_gray=True):
+    # Open the video file
+    cap = cv2.VideoCapture(video_path)
+    
+    # Calculate the total number of frames and the sampling rate
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_sample_rate = max(1, total_frames // num_frames_to_sample)
+    
+    # Initialize the MTCNN detector
+    detector = MTCNN()
+    
+    # List to store cropped faces
+    cropped_faces = []
+    
+    current_frame = 0
+    sampled_frame_count = 0
+    
+    # Process the video
+    while cap.isOpened() and sampled_frame_count < num_frames_to_sample:
+        # Set the video position
+        cap.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
+        
+        # Read a frame from the video
+        ret, frame = cap.read()
+        
+        # Break the loop if there are no more frames
+        if not ret:
+            break
+        
+        # Detect faces in the frame
+        faces = detector.detect_faces(frame)
+        
+        # Crop and store the first face found (if any)
+        if len(faces) > 0:
+            x, y, width, height = faces[0]['box']
+            face_frame = frame[y:y+height, x:x+width]
+            resized_face = cv2.resize(face_frame, (frame_size[0], frame_size[1]))
+            cropped_faces.append(resized_face)
+            sampled_frame_count += 1
+        
+        current_frame += frame_sample_rate
+    
+    # Release the video capture object
+    cap.release()
+    
+    # Augment frames if necessary
+    while len(cropped_faces) < num_frames_to_sample:
+        cropped_faces += cropped_faces[:max(1, num_frames_to_sample - len(cropped_faces))]
+    
+    # Ensure the list is not longer than needed
+    cropped_faces = cropped_faces[:num_frames_to_sample]
+    
+    # Process each frame
+    for i in range(len(cropped_faces)):
+        face = cropped_faces[i]
+        
+        # Convert to grayscale if necessary
+        if return_gray:
+            face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        
+        cropped_faces[i] = face
+    
+    # Normalize the frames
+    processed_frames = np.array(cropped_faces) / 255.0
+    channels = 1 if return_gray else 3
+    processed_frames = processed_frames.reshape((num_frames_to_sample, frame_size[0], frame_size[1], channels))
+    
+    return processed_frames
+
 # Helper function that Takes processed frames and saves them as gifs in output path (for visualization)
 def save_frames_as_gif(processed_frames, output_folder, filename='video.gif', fps=10):
     # Ensure the output directory exists
@@ -177,7 +255,8 @@ def prepare_dataset(output_folder, dataset="court_trial", num_frames_to_sample=1
     for video_path, label in videos:
         counter += 1
         print(counter, video_path, "\n")
-        processed_frames = preprocess_video(video_path, num_frames_to_sample, frame_size, return_gray, verify_faces)
+        #processed_frames = preprocess_video(video_path, num_frames_to_sample, frame_size)
+        processed_frames = preprocess_video_mtcnn(video_path, num_frames_to_sample, frame_size, return_gray)
         
         label_text = "Deceptive" if label == 1 else "Truthful"
         
@@ -260,3 +339,5 @@ def get_data_from_saved_numpy_arrays(data_path):
     X, y= shuffle(X, y, random_state=42)
     
     return X, y
+
+
