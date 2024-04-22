@@ -130,7 +130,6 @@ def get_video_name_from_path(path):
     # Remove the file extension from the last component if it's a file
     last = os.path.splitext(last)[0]
 
-    # Concatenate the last two components with a '/'
     return last
 
 

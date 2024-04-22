@@ -5,8 +5,8 @@ import os
 import tensorflow as tf
 
 # Path to the saved model
-base_path = 'Saved Processed Data and Models/court_trial (frame_length=0.025 hop_length=0.01 num_samples= 700)'
-model_path = os.path.join(base_path, 'Bidirectional LSTM 0.62 Lss 79.17 Acc.h5') # best generalization
+base_path = 'Saved Processed Data and Models/court_trial (frame_length=0.025 hop_length=0.01 num_samples= 2000)'
+model_path = os.path.join(base_path, 'Bidirectional LSTM 0.65 Lss 75.00 Acc.h5') # best generalization
 
 # Load the saved model
 model = load_model(model_path)
@@ -40,3 +40,25 @@ while True:
 
 
 
+# Generalization test:
+
+# # Get data and manually split
+# data_path = "Saved Processed Data and Models/court_trial (frame_length=0.025 hop_length=0.01 num_samples= 2000)/Numpy Arrays"
+# manual_split_video_names_path = '../Datasets/Real Life Trial Cases Data/Manual Split Test Videos.txt'
+
+# # Manual Split
+# X_train, X_test, y_train, y_test = pp.get_manual_split_data(data_path, manual_split_video_names_path)
+
+
+# ### Reshaping section (for RNNs only) ###
+
+# model_input_shape = (X_train.shape[2], X_train.shape[1])
+# X_train = np.transpose(X_train, (0, 2, 1))
+# X_test = np.transpose(X_test, (0, 2, 1))
+
+# # Printing shapes
+# print('X_train shape is:' , X_train.shape)
+# print('X_test shape is:' , X_test.shape)
+# # Evaluate on loaded data
+# evaluation = model.evaluate(X_train, y_train)
+# print(f'Evaluation: Test Loss: {evaluation[0]}, Test Accuracy: {evaluation[1]}')

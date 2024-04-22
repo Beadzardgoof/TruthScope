@@ -1,0 +1,21 @@
+.header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 24px 0px;
+}
+
+.nav-bar {
+  display: flex;
+  justify-content: space-evenly;
+  width: 30%;
+}
+
+.header-logo {
+  width: 220px;
+}
+@media (max-width: 550px) {
+  .nav-bar{
+    display:none;
+  }
+}

@@ -3,8 +3,6 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.feature_extraction.text import CountVectorizer
-from keras.preprocessing.text import Tokenizer
-from keras_preprocessing.sequence import pad_sequences
 from joblib import dump, load
 from gensim.models import KeyedVectors
 from gensim.scripts.glove2word2vec import glove2word2vec

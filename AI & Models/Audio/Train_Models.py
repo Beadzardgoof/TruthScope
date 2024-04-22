@@ -15,6 +15,8 @@ import tensorflow as tf
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 
+### Court trial dataset ###
+
 ## Prepare data
 
 output_path = "Saved Processed Data and Models/court_trial (frame_length=0.025 hop_length=0.01 num_samples= 700)"
@@ -27,14 +29,26 @@ manual_split_video_names_path = '../Datasets/Real Life Trial Cases Data/Manual S
 # Manual Split
 X_train, X_test, y_train, y_test = pp.get_manual_split_data(data_path, manual_split_video_names_path)
 
-# Auto split (For testing)
-#X, y = pp.get_data_from_saved_numpy_arrays(data_path)
-#X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2 ,stratify=y)
+# # Auto split (For testing)
+# #X, y = pp.get_data_from_saved_numpy_arrays(data_path)
+# #X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2 ,stratify=y)
 
-# PCA
-#X_train = pp.scale_and_apply_pca(X_train, num_pca_components=5, is_test = False)
-#X_test = pp.scale_and_apply_pca(X_test, num_pca_components=5, is_test = True)
+# # PCA
+# #X_train = pp.scale_and_apply_pca(X_train, num_pca_components=5, is_test = False)
+# #X_test = pp.scale_and_apply_pca(X_test, num_pca_components=5, is_test = True)
 
+
+### MU3D ###
+
+# # Prepare data
+# output_path = "Saved Processed Data and Models/MU3D (frame_length=0.025 hop_length=0.01 num_samples= 700)"
+# pp.prepare_dataset(output_folder= output_path, dataset= 'MU3D')
+
+
+# # Train test split
+# data_path = "Saved Processed Data and Models/MU3D (frame_length=0.025 hop_length=0.01 num_samples= 700)/Numpy Arrays"
+# X, y = pp.get_data_from_saved_numpy_arrays(data_path)
+# X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2 ,stratify=y, shuffle= True)
 
 
 ### Reshaping section (for RNNs only) ###
@@ -60,16 +74,16 @@ print('X_test shape is:' , X_test.shape)
 # md.train_model_dl(lstm_model, output_path , X_train, y_train, X_test, y_test, name ="LSTM", batch_size=4, epochs= 40)
 # print("\n")
 
-#2 Bidirectional LSTM
+# #2 Bidirectional LSTM
 
-print("#2 Bidirectional LSTM model \n")
-bidirectional_lstm_model = md.build_lstm_bidirectional(input_shape=model_input_shape)
-md.train_model_dl(bidirectional_lstm_model, output_path, X_train, y_train, X_test, y_test, name ="Bidirectional LSTM", batch_size=4, epochs= 40)
+# print("#2 Bidirectional LSTM model \n")
+# bidirectional_lstm_model = md.build_lstm_bidirectional(input_shape=model_input_shape)
+# md.train_model_dl(bidirectional_lstm_model, output_path, X_train, y_train, X_test, y_test, name ="Bidirectional LSTM", batch_size=4, epochs= 40)
 
 #3 Simple RNN
 # print("#3 Simple RNN model \n")
 # simple_rnn_model = md.build_simple_rnn(input_shape=model_input_shape)
-# md.train_model_dl(simple_rnn_model, output_path , X_train, y_train, X_test, y_test, name ="Simple RNN", batch_size=4, epochs= 40)
+# md.train_model_dl(simple_rnn_model, output_path , X_train, y_train, X_test, y_test, name ="Simple RNN", batch_size=4, epochs= 20)
 # print("\n")
 
 # #4 GRU
@@ -78,6 +92,10 @@ md.train_model_dl(bidirectional_lstm_model, output_path, X_train, y_train, X_tes
 # md.train_model_dl(gru_model, output_path , X_train, y_train, X_test, y_test, name ="GRU", batch_size=4, epochs= 40)
 
 
+# #5 CNN Biridrectional LSTM
+print("#6 CNN-BiLSTM model \n")
+gru_model = md.build_cnn_lstm_bidirectional(input_shape=model_input_shape)
+md.train_model_dl(gru_model, output_path , X_train, y_train, X_test, y_test, name ="CNN-BiLSTM", batch_size=4, epochs= 40)
 
 
 

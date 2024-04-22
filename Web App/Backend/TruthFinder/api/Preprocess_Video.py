@@ -7,7 +7,6 @@ import gc
 import imageio
 from sklearn.utils import shuffle
 import random
-import dlib
 from mtcnn import MTCNN
 import sys
 import mediapipe as mp
@@ -230,7 +229,6 @@ def get_video_name_from_path(path):
     # Remove the file extension from the last component if it's a file
     last = os.path.splitext(last)[0]
 
-    # Concatenate the last two components with a '/'
     return last
 
 # Main function to prepare the dataset, it preprocesses every video in the dataset and saves train and test sets as .npy files as well as images for visualization

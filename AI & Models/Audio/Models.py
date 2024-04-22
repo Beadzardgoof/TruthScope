@@ -1,11 +1,11 @@
 from keras.models import Sequential
-from keras.layers import LSTM, Dense, Dropout, Bidirectional, SimpleRNN, GRU, Embedding, MultiHeadAttention, LayerNormalization, GlobalAveragePooling1D, Input
+from keras.layers import LSTM, Dense, Dropout, Bidirectional, SimpleRNN, GRU, Embedding, MultiHeadAttention, LayerNormalization, GlobalAveragePooling1D, Input, Conv1D, MaxPooling1D, Flatten
 from keras.models import Model
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 import numpy as np
 import pandas as pd
-from keras.optimizers import Adam
+from keras.optimizers import Adam, RMSprop
 from keras_nlp.layers import SinePositionEncoding
 import os
 from keras.models import load_model
@@ -82,6 +82,20 @@ def build_ann(output_units=2, learning_rate=0.01):
     
     return model
 
+def build_cnn_lstm_bidirectional(input_shape, learning_rate=0.0001):
+    model = Sequential()
+    model.add(Conv1D(filters=8, kernel_size=5, activation='relu', input_shape=input_shape))
+    model.add(MaxPooling1D(pool_size=2))
+    model.add(Bidirectional(LSTM(units=32, activation='tanh')))
+    model.add(Flatten())
+    model.add(Dense(units=1, activation='sigmoid'))
+    
+    adam_optimizer = RMSprop()
+    model.compile(optimizer=adam_optimizer,
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    
+    return model
 
 
 # Trains the model on the processed data

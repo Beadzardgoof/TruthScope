@@ -1,0 +1,8 @@
+body {
+  height: 105vh;
+  /* background: linear-gradient(#8d4058, #1d2671); */
+  background-image: url("../public/icons/bg1.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
