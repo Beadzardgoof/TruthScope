@@ -45,21 +45,27 @@ test_df = pp.preprocess_df(test_df, "test", num_grams= 1)
 
 
 # Extract features
-feature_extractor = 'tf-idf'
+feature_extractor = 'glove 100d'
 
 # Vectorize using tf idf or count vectorizer or glove
-X_train_extracted = fe.tf_idf_vectorize(train_df['text'])
-X_test_extracted = fe.tf_idf_vectorize(test_df['text'], is_test= True)
+#X_train_extracted = fe.tf_idf_vectorize(train_df['text'])
+#X_test_extracted = fe.tf_idf_vectorize(test_df['text'], is_test= True)
 
+# Using Glove
 # X_train_extracted = fe.glove_vectorize(train_df['text'])
 # X_test_extracted = fe.glove_vectorize(test_df['text'])
+
+# Using BERT
+#X_train_extracted = fe.bert_vectorize(train_df['text'].tolist())
+#X_test_extracted = fe.bert_vectorize(test_df['text'].tolist())
+
 
 # # Save extracted data
 # np.save(f'Glove/Extracted data/{dataset_name}glove_100d_x_train.npy', X_train_extracted)
 # np.save(f'Glove/Extracted data/{dataset_name}glove_100d_x_test.npy', X_test_extracted)
 
-# X_train_extracted = np.load(f'Glove/Extracted data/{dataset_name}glove_100d_x_train.npy')
-# X_test_extracted = np.load(f'Glove/Extracted data/{dataset_name}glove_100d_x_test.npy')
+X_train_extracted = np.load(f'Glove/Extracted data/{dataset_name}glove_100d_x_train.npy')
+X_test_extracted = np.load(f'Glove/Extracted data/{dataset_name}glove_100d_x_test.npy')
 
 
 ### Reshaping section (for RNNs only) ###
@@ -68,9 +74,9 @@ X_test_extracted = fe.tf_idf_vectorize(test_df['text'], is_test= True)
 # model_shape = X_train_extracted.shape
 
 # # Convert to arrays and reshape for the sequential models.
-X_train_extracted= X_train_extracted.toarray()
+#X_train_extracted= X_train_extracted.toarray()
 # X_train_extracted = np.reshape(X_train_extracted, newshape=(X_train_extracted.shape[0],1, X_train_extracted.shape[1]))
-X_test_extracted= X_test_extracted.toarray()
+#X_test_extracted= X_test_extracted.toarray()
 # X_test_extracted = np.reshape(X_test_extracted, newshape=(X_test_extracted.shape[0],1, X_test_extracted.shape[1]))
 
 
@@ -144,9 +150,14 @@ gb_classifier = GradientBoostingClassifier()
 md.train_model_ml(gb_classifier, os.path.join("Saved Models", dataset_name) ,X_train_extracted, y_train, X_test_extracted, y_test, name = f"GBC {feature_extractor}")
 
 #6 SGD
-sgd_classifier = SGDClassifier()
+sgd_classifier = SGDClassifier(
+    alpha=0.0001,
+    learning_rate = 'optimal',)
 md.train_model_ml(sgd_classifier, os.path.join("Saved Models", dataset_name) ,X_train_extracted, y_train, X_test_extracted, y_test, name = f"SGD {feature_extractor}")
 
 #7 XGBoost 
-xgb_classifier = XGBClassifier()
+xgb_classifier = XGBClassifier(max_depth = 6,
+learning_rate = 0.3,
+ n_estimators = 100,
+)
 md.train_model_ml(xgb_classifier, os.path.join("Saved Models", dataset_name) ,X_train_extracted, y_train, X_test_extracted, y_test, name = f"XGB {feature_extractor}")

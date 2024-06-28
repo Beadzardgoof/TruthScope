@@ -6,7 +6,6 @@ from keras.callbacks import ModelCheckpoint
 import numpy as np
 import pandas as pd
 from keras.optimizers import Adam
-from keras_nlp.layers import SinePositionEncoding
 import os
 from keras.models import load_model
 from sklearn.model_selection import train_test_split
@@ -36,14 +35,19 @@ def build_lstm(input_shape, output_units=2, learning_rate=0.0001):
     
     return model
 
-def build_lstm_bidirectional(input_shape, output_units=2, learning_rate=0.0001):
+def build_lstm_bidirectional(input_shape):
     model = Sequential()
-    model.add(Bidirectional(LSTM(units=32, activation='tanh'), input_shape=input_shape))
-    model.add(Dense(units=output_units, activation='softmax'))
+    model.add(Bidirectional(LSTM(units=32, activation='tanh', return_sequences= True), input_shape=input_shape))
+    model.add(Dropout(0.2))
+    model.add(Bidirectional(LSTM(units=32, activation='tanh', return_sequences= False)))
+    model.add(Dropout(0.2))
+    model.add(Dense(units=50, activation='relu'))
+    model.add(Dropout(0.2))
+    model.add(Dense(units=10, activation='relu'))
+    model.add(Dense(units=1, activation='sigmoid'))
     
-    adam_optimizer = Adam(learning_rate=learning_rate)
-    model.compile(optimizer=adam_optimizer,
-                  loss='sparse_categorical_crossentropy',
+    model.compile(optimizer=Adam(),
+                  loss='binary_crossentropy',
                   metrics=['accuracy'])
     
     return model

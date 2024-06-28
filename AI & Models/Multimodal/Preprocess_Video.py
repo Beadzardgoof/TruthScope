@@ -322,7 +322,8 @@ def get_data_from_saved_numpy_arrays(data_path):
         folder_path = os.path.join(data_path, folder_name)
 
         # Loop over the files in the folder
-        for file_name in os.listdir(folder_path):       
+        for file_name in os.listdir(folder_path):
+            print(file_name)       
             video_path = os.path.join(folder_path, file_name)
             video_data = np.load(video_path)
             
@@ -335,7 +336,7 @@ def get_data_from_saved_numpy_arrays(data_path):
 
 
     # Shuffle the training and testing data separately
-    X, y= shuffle(X, y, random_state=42)
+    #X, y= shuffle(X, y, random_state=42)
     
     return X, y
 

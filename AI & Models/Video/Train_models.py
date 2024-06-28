@@ -8,7 +8,7 @@ import gc
 ### Real Life Trial Dataset ###
 
 # Preprocess the video data
-output_path = "Saved Processed Data and Models/court_trial 100x64x64x1 MTCNN"
+output_path = "Saved Processed Data and Models/court_trial 100x64x64x1 MTCNN/New Split"
 #pp.prepare_dataset(output_folder= output_path, dataset= 'court_trial', frame_size=[64, 64], return_gray= True, num_frames_to_sample=100)
 
     

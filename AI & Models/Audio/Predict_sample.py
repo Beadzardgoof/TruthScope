@@ -25,7 +25,7 @@ while True:
         break
 
     # Preprocess the input video
-    audio_features = pp.get_audio_features(sample_path)
+    audio_features = pp.get_audio_features_full(sample_path)
     audio_features = np.expand_dims(audio_features, axis=0)
     audio_features = np.transpose(audio_features, (0, 2, 1))
 

@@ -65,20 +65,7 @@ print('X_test shape is:' , X_test.shape)
 ### Reshaping section (for RNNs only) ###
 
 # # Save original shape for model first layer input shape specification.
-# model_shape = X_train_extracted.shape
-
-# # Convert to arrays and reshape for the sequential models.
-#X_train_extracted= X_train_extracted.toarray()
-# X_train_extracted = np.reshape(X_train_extracted, newshape=(X_train_extracted.shape[0],1, X_train_extracted.shape[1]))
-#X_test_extracted= X_test_extracted.toarray()
-# X_test_extracted = np.reshape(X_test_extracted, newshape=(X_test_extracted.shape[0],1, X_test_extracted.shape[1]))
-
-
-# # Print all shapes
-# print("Neural Network shape:", model_shape)
-# print("Train set shape:", X_train_extracted.shape)
-# print("Validation set shape:", X_test_extracted.shape)
-
+#model_shape = X_train.shape
 
 
 # Train and evaluate models
@@ -93,8 +80,8 @@ print('X_test shape is:' , X_test.shape)
 
 # #2 Bidirectional LSTM
 # print("#2 Bidirectional LSTM model \n")
-# bidirectional_lstm_model = md.build_lstm_bidirectional(input_shape=(1, model_shape[1]))
-# md.train_model_dl(bidirectional_lstm_model,f'Saved Models/{dataset_name}' , X_train_extracted, y_train, X_test_extracted, y_test, name ="Bidirectional LSTM", batch_size=4, epochs= 20)
+# bidirectional_lstm_model = md.build_lstm_bidirectional(input_shape=(model_shape[1], model_shape[2]))
+# md.train_model_dl(bidirectional_lstm_model,f'Saved Models/{dataset_name}' , X_train, y_train, X_test, y_test, name ="Bidirectional LSTM", batch_size=4, epochs= 30)
 # print("\n")
 
 # #3 Simple RNN
@@ -119,32 +106,39 @@ print('X_test shape is:' , X_test.shape)
 ## MACHINE LEARNING MODELS ##
 
 #1 SVM
-# svm_classifier = SVC(kernel='rbf')
-# md.train_model_ml(svm_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"SVM")
+svm_classifier = SVC(kernel='linear', C = 10, gamma = 'auto') 
+md.train_model_ml(svm_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"SVM")
 
-# #2 Random Forest
-# rf_classifier = RandomForestClassifier(max_depth=500, n_estimators= 3000) # 58 acc def
-# md.train_model_ml(rf_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"Random Forest")
+#2 Random Forest
+rf_classifier = RandomForestClassifier(max_depth=50, n_estimators= 3000, max_leaf_nodes = 10) 
+md.train_model_ml(rf_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"Random Forest")
 
-# #3 Logistic Regression
-# lr_classifier = LogisticRegression(max_iter = 3000)
-# md.train_model_ml(lr_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"Logistic Regression")
+#3 Logistic Regression
+lr_classifier = LogisticRegression(max_iter = 3000)
+md.train_model_ml(lr_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"Logistic Regression")
 
-# #4 Decision Tree
-# dt_classifier = DecisionTreeClassifier() # 62.50
-# md.train_model_ml(dt_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"Decision Tree")
+#4 Decision Tree
+dt_classifier = DecisionTreeClassifier(criterion='gini',
+    splitter='best',
+    max_depth= 6,)
 
-# #5 GBC
-# gb_classifier = GradientBoostingClassifier()
-# md.train_model_ml(gb_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"GBC")
+md.train_model_ml(dt_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"Decision Tree")
 
-# #6 SGD
-# sgd_classifier = SGDClassifier()
-# md.train_model_ml(sgd_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"SGD")
+#5 GBC 
+gb_classifier = GradientBoostingClassifier()
+md.train_model_ml(gb_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"GBC")
 
-# #7 XGBoost 
-# xgb_classifier = XGBClassifier() 
-# md.train_model_ml(xgb_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"XGB")
+#6 SGD
+sgd_classifier = SGDClassifier()
+md.train_model_ml(sgd_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"SGD")
+
+#7 XGBoost 
+xgb_classifier = XGBClassifier(max_depth=6,
+    learning_rate=0.3,
+    n_estimators=100,
+    booster='gbtree',
+    gamma=0,) 
+md.train_model_ml(xgb_classifier, os.path.join("Saved Models", dataset_name) ,X_train, y_train, X_test, y_test, name = f"XGB")
 
 
 

@@ -100,8 +100,6 @@ def extract_facial_features_optimized(video_path, frame_skip=30):
         
 
 
-
-
 # Helper function to get last folder/file in a path string
 def get_video_name_from_path(path):
     # Split the path into components
@@ -164,6 +162,48 @@ def prepare_feature_vector(features_csv_path):
     
     return feature_vector_mean
 
+# Similar to the function above but gets a sequence instead of a mean feature vector
+def prepare_feature_sequence(features_csv_path, target_length):
+    # Load the CSV file
+    data = pd.read_csv(features_csv_path)
+    
+    # Include emotions columns
+    potential_columns = ['Pitch', 'Roll', 'Yaw', 'anger', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'neutral']
+    columns_to_keep = [col for col in potential_columns if col in data.columns]
+    
+    # Include AU (action units) columns
+    au_columns = [col for col in data.columns if col.startswith('AU')]
+    columns_to_keep += au_columns
+    
+    # Filter the dataframe based on the existing columns
+    filtered_data = data[columns_to_keep]
+    
+    # Get the number of samples
+    num_samples = len(filtered_data)
+    
+    # Downsample if the number of samples is greater than the target length
+    if num_samples > target_length:
+        indices = np.linspace(0, num_samples - 1, target_length).astype(int)
+        sequence = filtered_data.iloc[indices].to_numpy()
+    
+    # Augment if the number of samples is less than the target length
+    else:
+        sequence = filtered_data.to_numpy()
+        num_repeats = target_length // num_samples
+        remainder = target_length % num_samples
+        
+        # Repeat the whole sequence
+        sequence = np.tile(sequence, (num_repeats, 1))
+        
+        # Add the remainder part
+        if remainder > 0:
+            sequence = np.vstack((sequence, sequence[:remainder]))
+    
+    # Ensure the sequence is exactly the target length
+    if len(sequence) > target_length:
+        sequence = sequence[:target_length]
+    
+    return sequence
 
 # Main function to extract features from all videos in the dataset
 def prepare_feature_vectors_from_dataset(data_path = "Facial Features Court Trial", output_path = "Feature Vectors Court Trial"):

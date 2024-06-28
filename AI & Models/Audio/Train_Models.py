@@ -86,16 +86,16 @@ print('X_test shape is:' , X_test.shape)
 # md.train_model_dl(simple_rnn_model, output_path , X_train, y_train, X_test, y_test, name ="Simple RNN", batch_size=4, epochs= 20)
 # print("\n")
 
-# #4 GRU
-# print("#4 GRU model \n")
-# gru_model = md.build_gru(input_shape=model_input_shape)
-# md.train_model_dl(gru_model, output_path , X_train, y_train, X_test, y_test, name ="GRU", batch_size=4, epochs= 40)
+#4 GRU
+print("#4 GRU model \n")
+gru_model = md.build_gru(input_shape=model_input_shape)
+md.train_model_dl(gru_model, output_path , X_train, y_train, X_test, y_test, name ="GRU", batch_size=4, epochs= 40)
 
 
 # #5 CNN Biridrectional LSTM
-print("#6 CNN-BiLSTM model \n")
-gru_model = md.build_cnn_lstm_bidirectional(input_shape=model_input_shape)
-md.train_model_dl(gru_model, output_path , X_train, y_train, X_test, y_test, name ="CNN-BiLSTM", batch_size=4, epochs= 40)
+# print("#5 CNN-BiLSTM model \n")
+# gru_model = md.build_cnn_lstm_bidirectional(input_shape=model_input_shape)
+# md.train_model_dl(gru_model, output_path , X_train, y_train, X_test, y_test, name ="CNN-BiLSTM", batch_size=4, epochs= 40)
 
 
 

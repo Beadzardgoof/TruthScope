@@ -11,8 +11,8 @@ import re
 import nltk
 import re 
 import os
-#nltk.download('wordnet')
-#nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('stopwords')
 
 
 # Helper functions to prepare text and labels dataframes

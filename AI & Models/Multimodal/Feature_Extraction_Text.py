@@ -3,10 +3,14 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.feature_extraction.text import CountVectorizer
+from keras.preprocessing.text import Tokenizer
+from keras_preprocessing.sequence import pad_sequences
 from joblib import dump, load
 from gensim.models import KeyedVectors
 from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.models import KeyedVectors
+from transformers import BertTokenizer, BertModel
+import torch
 
 def tf_idf_vectorize(x, is_test = False):
     if (is_test):
@@ -32,7 +36,7 @@ def count_vectorize(x, is_test=False):
 # Converts text documents into mean GloVe embeddings
 def glove_vectorize(x):
     
-    model = KeyedVectors.load_word2vec_format('Glove/glove.6B.50d.txt.word2vec', binary=False)
+    model = KeyedVectors.load_word2vec_format('Glove/glove.6B.100d.txt.word2vec', binary=False)
     vectors = []
     for doc in x:
         words = doc.split()
@@ -45,6 +49,21 @@ def glove_vectorize(x):
     
     return np.array(vectors)
 
+
+def bert_vectorize(texts):
+    # Load pre-trained BERT model and tokenizer
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    model = BertModel.from_pretrained('bert-base-uncased')
+
+    # Tokenize input text
+    inputs = tokenizer(texts, return_tensors='pt', padding=True, truncation=True, max_length=512)
+    
+    # Get hidden states from BERT
+    with torch.no_grad():
+        outputs = model(**inputs)
+    # Use the output embeddings (last hidden state)
+    embeddings = outputs.last_hidden_state.mean(dim=1)  # Averaging over the sequence length
+    return embeddings.numpy()
 
 ### To transform a glove.txt file to word2vec format
 

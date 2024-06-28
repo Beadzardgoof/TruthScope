@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import LSTM, Dense, Dropout, Bidirectional, SimpleRNN, GRU, Embedding, MultiHeadAttention, LayerNormalization, GlobalAveragePooling1D, Input
+from keras.layers import LSTM, Dense, Dropout, Bidirectional, SimpleRNN, GRU, Embedding, MultiHeadAttention, LayerNormalization, GlobalAveragePooling1D, Input, BatchNormalization
 from keras.models import Model
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
@@ -84,7 +84,6 @@ def build_ann(output_units=1, learning_rate=0.01):
                   metrics=['accuracy'])
     
     return model
-
 
 
 # Trains the model on the processed data

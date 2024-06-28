@@ -33,7 +33,7 @@ def build_lstm(input_shape, output_units=2, learning_rate=0.0001):
     
     return model
 
-def build_lstm_bidirectional(input_shape, output_units=2, learning_rate=0.0001):
+def build_lstm_bidirectional(input_shape, output_units=2, learning_rate=0.01):
     model = Sequential()
     model.add(Bidirectional(LSTM(units=32, activation='tanh'), input_shape=input_shape))
     model.add(Dense(units=output_units, activation='softmax'))
@@ -90,7 +90,7 @@ def build_cnn_lstm_bidirectional(input_shape, learning_rate=0.0001):
     model.add(Flatten())
     model.add(Dense(units=1, activation='sigmoid'))
     
-    adam_optimizer = RMSprop()
+    adam_optimizer = RMSprop(learning_rate= learning_rate)
     model.compile(optimizer=adam_optimizer,
                   loss='binary_crossentropy',
                   metrics=['accuracy'])

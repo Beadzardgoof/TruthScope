@@ -24,6 +24,8 @@ AI & Models/Signals/Failed Attempts/
 AI & Models/Multimodal/Pretrained Models/Video CNN_3D 0.61 Lss 87.50 Acc.h5
 AI & Models/Multimodal/AH Trial/
 AI & Models/Multimodal/Court Trial Test Set/
+AI & Models/Multimodal/Failed Attempts/
+AI & Models/Multimodal/Early Fusion/
 
 # Web app
 Web App/Backend/TruthFinder/api/Pretrained Models/
