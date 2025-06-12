@@ -7,11 +7,35 @@ from keras.models import Sequential
 from keras.layers import Conv3D, MaxPooling3D, Flatten, Dense, Dropout, LSTM, BatchNormalization, TimeDistributed, Conv2D, MaxPooling2D, Bidirectional
 from keras.optimizers import Adam, SGD, Adamax, Adadelta, Ftrl, Nadam, RMSprop
 from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.models import load_model
+from keras.models import load_model as keras_load_model
 from keras.applications import ResNet50
 from keras.optimizers import RMSprop
 from keras.metrics import Precision, Recall, AUC
 
+# Default model configuration
+DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(__file__), 'weights', 'best_model.h5')
+DEFAULT_INPUT_SHAPE = (None, 224, 224, 3)  # (timesteps, height, width, channels)
+
+def load_model(model_path=None):
+    """
+    Load the deception detection model.
+    
+    Args:
+        model_path (str, optional): Path to model weights. If None, uses default weights.
+        
+    Returns:
+        model: Loaded Keras model ready for inference
+    """
+    if model_path is None:
+        model_path = DEFAULT_MODEL_PATH
+        
+    if os.path.exists(model_path):
+        return keras_load_model(model_path)
+    else:
+        # If no weights found, return a new model with default architecture
+        model = build_CNN_LSTM_ALT(DEFAULT_INPUT_SHAPE)
+        print(f"Warning: No weights found at {model_path}. Returning uninitialized model.")
+        return model
 
 # Defines the architecture for a CNN-LSTM model
 def build_CNN_LSTM(input_shape):
