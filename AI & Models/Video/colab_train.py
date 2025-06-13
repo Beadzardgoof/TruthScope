@@ -9,12 +9,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from google.colab import drive
 
-# Add the Video directory to Python path
+# Get the absolute path to the Video directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)  # Get the AI & Models directory
+
+# Add both the Video directory and its parent to Python path
 if current_dir not in sys.path:
     sys.path.append(current_dir)
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
 
-# Now import the local modules with correct filename
+# Now import the local modules
 import Models as md
 import Preprocess as pp
 
