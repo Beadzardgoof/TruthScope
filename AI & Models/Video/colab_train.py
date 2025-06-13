@@ -14,8 +14,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.append(current_dir)
 
-# Now import the local modules with correct capitalization
-import Models as md
+# Now import the local modules with correct filename
+import models as md
 import Preprocess as pp
 
 # Mount Google Drive (uncomment when ready to use)
