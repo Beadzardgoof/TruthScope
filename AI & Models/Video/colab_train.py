@@ -20,7 +20,7 @@ if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
 # Now import the local modules
-import Models as md
+import models as md
 import Preprocess as pp
 
 # Mount Google Drive (uncomment when ready to use)
