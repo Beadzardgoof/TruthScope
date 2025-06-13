@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
@@ -7,6 +8,13 @@ from tqdm.notebook import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
 from google.colab import drive
+
+# Add the Video directory to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+
+# Now import the local modules
 import models as md
 import Preprocess as pp
 
