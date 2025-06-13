@@ -15,7 +15,7 @@ if current_dir not in sys.path:
     sys.path.append(current_dir)
 
 # Now import the local modules with correct filename
-import models as md
+import Models as md
 import Preprocess as pp
 
 # Mount Google Drive (uncomment when ready to use)
