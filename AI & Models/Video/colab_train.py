@@ -2,6 +2,8 @@ import os
 import sys
 import numpy as np
 import tensorflow as tf
+# Force CPU usage to bypass GPU/CuDNN issues
+tf.config.set_visible_devices([], 'GPU')
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import cv2
 from tqdm.notebook import tqdm
