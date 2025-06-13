@@ -1,12 +1,10 @@
 # Deep Learning & Machine Learning
-tensorflow-intel>=2.15.0  # Use tensorflow-gpu instead if you have a compatible GPU
-keras>=2.10.0
-torch>=2.6.0
-scikit-learn>=1.0.2
-numpy>=1.21.0
+tensorflow>=2.15.0  # Colab comes with TensorFlow pre-installed
+keras>=2.15.0
+torch>=2.1.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
 onnxruntime>=1.17.0
-ml-dtypes>=0.4.0,<0.5.0  # Required by tensorflow-intel
-tensorboard>=2.18.0,<2.19.0  # Required by tensorflow-intel
 
 # Computer Vision
 opencv-python>=4.8.0.76
@@ -41,7 +39,8 @@ pytest>=7.3.1
 black>=23.3.0
 flake8>=6.0.0
 
-# Optional: GPU Support
-# Uncomment if using NVIDIA GPU
-# cuda-python>=11.8.0
-# cudnn>=8.7.0 
+# Colab-specific optimizations
+ipywidgets>=8.0.0  # For interactive widgets
+tqdm>=4.65.0  # For progress bars
+matplotlib>=3.7.0  # For visualization
+seaborn>=0.12.0  # For statistical visualizations 
