@@ -180,6 +180,9 @@ def train_model(X_train, X_test, y_train, y_test, model, output_path, name = "CN
     # Train the model
     history = model.fit(X_train, y_train, epochs= epochs, validation_data=(X_test, y_test), callbacks=[checkpoint, early_stopping],  batch_size=batch_size)
     
+    # Save the training history
+    np.save(os.path.join(output_path, f'{name}_history.npy'), history.history)
+    
     # Evaluate the checkpoint best model  on test set
     with tf.device('/cpu:0'): # For using CPU instead of GPU (CPU has more memory but GPU is faster)
         model_checkpoint = load_model(os.path.join(output_path, 'Checkpoint.h5'))
